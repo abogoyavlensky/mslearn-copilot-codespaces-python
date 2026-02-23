@@ -21,6 +21,16 @@ class Body(BaseModel):
 
 
 class PaginatedResponse(BaseModel):
+    """Response model for paginated token generation results.
+
+    Attributes:
+        items: List of generated tokens for the current page.
+        total: Total number of items returned on this page.
+        page: Current page number (1-indexed).
+        page_size: Number of items per page.
+        total_pages: Total number of pages available.
+    """
+
     items: List[str] = Field(description="List of generated tokens")
     total: int = Field(description="Total number of items returned")
     page: int = Field(description="Current page number")
@@ -48,14 +58,15 @@ def generate(
     page: int = Query(default=1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(default=20, ge=1, le=100, description="Number of tokens to generate (1–100)"),
 ):
-    """
-    Generate a page of pseudo-random token IDs.
+    """Generate a page of pseudo-random token IDs.
 
-    - **page**: which page of results (1-indexed; tokens are freshly generated each call)
-    - **page_size**: how many tokens to return (1–100, default 20)
-    - **length**: character length of each token (default 20)
+    Args:
+        body: Request body with a `length` field specifying the character length of each token.
+        page: Page number to return (1-indexed).
+        page_size: Number of tokens to return per page (1–100, default 20).
 
-    Example POST body: `{"length": 20}`
+    Returns:
+        A PaginatedResponse containing the generated tokens and pagination metadata.
     """
     items = [
         base64.b64encode(os.urandom(64))[:body.length].decode('utf-8')
